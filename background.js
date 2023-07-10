@@ -104,12 +104,30 @@ function matchGame(){
 }
 
 async function waitUntilNoHTML(element) {
-        while (true) {
-            try {
-                await delay(.1);
-            } catch { await delay(3); return; }
-            if (element.innerHTML == "") return;
+    return new Promise((resolve, reject) => {
+        const observer = new MutationObserver((mutationsList) => {
+            const hasInnerHTMLChanged = mutationsList.some(
+                (mutation) => mutation.type === 'childList' && mutation.target === element
+            );
+
+            if (hasInnerHTMLChanged) {
+                if (element.innerHTML == "") {
+                    console.log("innerHTML is now blank");
+                    observer.disconnect();
+                    resolve();
+                }
+            }
+        });
+
+        // Configure and start observing the target element
+        observer.observe(element, { childList: true, subtree: true });
+
+        // Check initial state
+        if (element.innerHTML === "") {
+            observer.disconnect();
+            resolve();
         }
+    });
 }
 
 function findMatchingCard(text){

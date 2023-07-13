@@ -4,26 +4,26 @@ function delay(ms) {
 
 console.log('Loading Quizlet match solver ...');
 
-path = window.location.pathname;
+const path = window.location.pathname;
 
-if (!path.endsWith('/match')) {
-    throw new Error();
-}
 
-definitions = [
-    ["Word", "Definition"]
-];
+// Only continue if the website ends with /match.
+// Wraps the rest of the script as actually ending execution of a javascript file involves raising an error
+if (path.endsWith('/match')) {
+    
+    let definitions = [
+        ["Word", "Definition"]
+    ];
 
-var remainingTiles = [];
+let remainingTiles = [];
 for (var i=0; i < definitions.length; i++) {
     remainingTiles.push(definitions[i][0]);
 }
 
 
-running = true;
+let running = true;
 console.log(path);
 window.addEventListener('load', async() => {
-
     console.log("Window loaded");
     
     startButton = document.getElementsByClassName('MatchModeInstructionsModal MatchModeInstructionsModal--normal');
@@ -36,7 +36,6 @@ window.addEventListener('load', async() => {
     while (running) {
         console.log('updating ...');
 
-        // console.log(remainingTiles);
         if (remainingTiles.length == 0) {
             console.log("No more remaining tiles");
             running = false;
@@ -59,7 +58,6 @@ window.addEventListener('load', async() => {
             }
             
             gameboardTilesList.push(gameboardTiles[y]);
-            // console.log(1, gameboardTiles[y].firstElementChild.innerText);
             gameboard.push(gameboardTiles[y].firstElementChild.innerText);
         }
 
@@ -69,13 +67,10 @@ window.addEventListener('load', async() => {
             continue;
         }
         
-        // console.log(gameboard);
-        // console.log(3, remainingTiles);
         while (!gameboard.includes(remainingTiles[0]) && remainingTiles.length != 0) {
             console.log(remainingTiles[0] + " is not on the board");
             remainingTiles.splice(0, 1);
         }
-        // console.log(4, remainingTiles);
 
         console.log("Working Tile: ", gameboard[0])
         workingTile = document.querySelector("div[aria-label='" + gameboard[0] + "']");
@@ -103,6 +98,7 @@ function matchGame(){
     
 }
 
+// watch an element until it is blank. Used for waiting for cards to disappear.
 async function waitUntilNoHTML(element) {
     return new Promise((resolve, reject) => {
         const observer = new MutationObserver((mutationsList) => {
@@ -130,21 +126,19 @@ async function waitUntilNoHTML(element) {
     });
 }
 
+// Given a text input, find the text of the matching word/definition
 function findMatchingCard(text){
     for (var i=0; i < definitions.length; i++){
-        def = definitions[i]
+        var thisDefinition = definitions[i];
 
-        if (def.includes(text)) {
-            for (var t=0; t < def.length; t++){
-                if(def[t] != text) {
-                    targetText = def[t];
-                    i = definitions.length;
-                    break;
-                }
-            }
+        indexOfWord = thisDefinition.indexOf(text);
+
+        if (indexOfWord != -1) {
+            indexOfTargetWord = ((indexOfWord+1) % 2);
+            console.log(indexOfWord, indexOfTargetWord, thisDefinition[indexOfTargetWord]);
+            return thisDefinition[indexOfTargetWord];
         }
-
     }
-
-    return targetText;
 }
+
+}   

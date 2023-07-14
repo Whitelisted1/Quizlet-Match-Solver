@@ -5,26 +5,56 @@ function delay(ms) {
 console.log('Loading Quizlet match solver ...');
 
 const path = window.location.pathname;
-
+console.log(path);
 
 // Only continue if the website ends with /match.
 // Wraps the rest of the script as actually ending execution of a javascript file involves raising an error
 if (path.endsWith('/match')) {
-    
-    let definitions = [
-        ["Word", "Definition"]
-    ];
 
-let remainingTiles = [];
-for (var i=0; i < definitions.length; i++) {
-    remainingTiles.push(definitions[i][0]);
+thisID = path.split("/")[1];
+
+// https://www.thiscodeworks.com/get-quizlet-flashcards-via-api/61bbc4382e046e00150bd05b
+async function getQuizletCards(id){
+    let res = await fetch(`https://quizlet.com/webapi/3.4/studiable-item-documents?filters%5BstudiableContainerId%5D=${id}&filters%5BstudiableContainerType%5D=1&perPage=5&page=1`).then(res => res.json())
+
+    let currentLength = 5;
+    let token = res.responses[0].paging.token
+    let terms = res.responses[0].models.studiableItem;
+    let page = 2;
+
+    while (currentLength >= 5){
+        let res = await fetch(`https://quizlet.com/webapi/3.4/studiable-item-documents?filters%5BstudiableContainerId%5D=${id}&filters%5BstudiableContainerType%5D=1&perPage=5&page=${page++}&pagingToken=${token}`).then(res => res.json());
+        terms.push(...res.responses[0].models.studiableItem);
+        currentLength = res.responses[0].models.studiableItem.length;
+        token = res.responses[0].paging.token;
+    }
+
+    return terms;
 }
-
 
 let running = true;
 console.log(path);
 window.addEventListener('load', async() => {
     console.log("Window loaded");
+
+    // Grab the Quizlet cards and add them to the definitions list. This makes it so the user doesn't have to do this manually
+    quizletMatchInfo = await getQuizletCards(thisID);
+    definitions = [];
+
+    for (var i = 0; i < quizletMatchInfo.length; i++) {
+        thisItem = quizletMatchInfo[i];
+
+        if (thisItem.isDeleted) continue;
+        
+        definitions.push([ thisItem.cardSides[0].media[0].plainText, thisItem.cardSides[1].media[0].plainText ])
+    }
+
+    console.log(definitions);
+
+    let remainingTiles = [];
+    for (var i=0; i < definitions.length; i++) {
+        remainingTiles.push(definitions[i][0]);
+    }
     
     startButton = document.getElementsByClassName('MatchModeInstructionsModal MatchModeInstructionsModal--normal');
     gameStarted = startButton.length == 0;
@@ -87,6 +117,7 @@ window.addEventListener('load', async() => {
         
         
         await waitUntilNoHTML(gameboardTilesList[0]);
+        // await delay(5);
     }
 
     console.log("No longer running loop");

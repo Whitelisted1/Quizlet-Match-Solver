@@ -2,6 +2,24 @@ function delay(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
 
+// Get elements with a specific aria-label (for getting card elements)
+// Useful because querySelector doesn't allow newlines, and we don't have to filter the matching card's text
+function getElementFromAriaLabel(text, elementType="div") {
+    const divElements = Array.from(document.querySelectorAll(elementType));
+
+    for (var i = 0; i < divElements.length; i++) {
+        element = divElements[i];
+        if (!element.hasAttribute("aria-label")) continue;
+
+        if (element.getAttribute("aria-label") == text) {
+            return element;
+        }
+    }
+
+    console.error(`Unable to find elemnt with aria-label of "${text}"`);
+    return null;
+}
+
 console.log('Loading Quizlet match solver ...');
 
 const path = window.location.pathname;
@@ -33,11 +51,11 @@ async function getQuizletCards(id){
 }
 
 let running = true;
-console.log(path);
 window.addEventListener('load', async() => {
     console.log("Window loaded");
 
-    shouldStartGame = document.querySelector('button[aria-label="Start game"]') != null;
+    let startButton = document.querySelector('button[aria-label="Start game"]')
+    shouldStartGame = startButton != null;
 
     if (shouldStartGame) {
         solverStatusText = document.createElement("span");
@@ -46,8 +64,8 @@ window.addEventListener('load', async() => {
         solverStatusText.classList.add("matchSolverText");
         solverStatusText.classList.add("thinking");
     
-        document.querySelector('button[aria-label="Start game"]').parentElement.parentElement.appendChild(solverStatusText);
-        document.querySelector('button[aria-label="Start game"]').setAttribute("disabled", "");
+        startButton.parentElement.parentElement.appendChild(solverStatusText);
+        startButton.setAttribute("disabled", "");
     
         console.log("Fetching quizlet match answers ...");
     }
@@ -68,16 +86,11 @@ window.addEventListener('load', async() => {
 
     console.log(definitions);
     
-    let remainingTiles = [];
-    for (var i=0; i < definitions.length; i++) {
-        remainingTiles.push(definitions[i][0]);
-    }
-    
     if (shouldStartGame) {
         solverStatusText.innerHTML = "Fetched cards &check;"
         solverStatusText.classList.remove("thinking");
 
-        document.querySelector('button[aria-label="Start game"]').removeAttribute("disabled");
+        startButton.removeAttribute("disabled");
         
         waitForButtonClick = async function (element) {
             return new Promise((resolve, reject) => {
@@ -87,29 +100,28 @@ window.addEventListener('load', async() => {
             });
         }
         
-        await waitForButtonClick(document.querySelector('button[aria-label="Start game"]'));
+        await waitForButtonClick(startButton);
         
         console.log("Start button clicked");
+
+        await delay(1); // Allow time for the button to fade away before continuing 
     }
 
+
+    // Main loop. Loops through tiles and finds their counterpart, then clicks them both.
     while (running) {
         console.log('updating ...');
-
-        if (remainingTiles.length == 0) {
-            console.log("No more remaining tiles");
-            running = false;
-            // continue;
-        }
         
         gameboard = [];
         gameboardTilesList = [];
-
+        
+        // Get the tiles
         gameboardTiles = document.getElementsByClassName('MatchModeQuestionGridBoard-tiles')[0].childNodes;
         if (gameboardTiles == undefined) {
             console.log("No child nodes ... ");
-            return;
+            break;
         }
-
+        
         for (var y = 0; y < gameboardTiles.length; y++) {
             if (gameboardTiles[y].innerHTML == "") {
                 console.log(gameboardTiles[y] + " tile is empty");
@@ -119,38 +131,34 @@ window.addEventListener('load', async() => {
             gameboardTilesList.push(gameboardTiles[y]);
             gameboard.push(gameboardTiles[y].firstElementChild.innerText);
         }
-
+        
         if (gameboard.length === 0) {
             console.log("Gameboard is empty ...");
             running = false;
             continue;
         }
-        
-        while (!gameboard.includes(remainingTiles[0]) && remainingTiles.length != 0) {
-            console.log(remainingTiles[0] + " is not on the board");
-            remainingTiles.splice(0, 1);
-        }
+
+        console.log(gameboard);
 
         console.log("Working Tile: ", gameboard[0])
-        workingTile = document.querySelector("div[aria-label='" + gameboard[0].replace("'", "\\'").replace('"', '\\"').replace("`", "\\`") + "']");
-        workingTile.parentElement.parentElement.dispatchEvent(new PointerEvent('pointerdown'));
-        
-        // await delay(1);
+        firstTile = getElementFromAriaLabel(gameboard[0], "div");
+        firstTile.parentElement.parentElement.dispatchEvent(new PointerEvent('pointerdown')); // Essentially click the element
         
         matchingCardText = findMatchingCard(gameboard[0])
-        matchingTile = document.querySelector("div[aria-label='" + matchingCardText.replace("'", "\\'").replace('"', '\\"').replace("`", "\\`") + "']");
+        matchingTile = getElementFromAriaLabel(matchingCardText, "div");
+
+        // we can't find the matching card, perhaps the card has an image
+        if (matchingTile == null) {
+            return; // welp, we tried
+        }
 
         matchingTile.parentElement.parentElement.dispatchEvent(new PointerEvent('pointerdown'));
-        
-        // remainingTiles.splice(0, 1);
-        
         
         await waitUntilNoHTML(gameboardTilesList[0]);
         // await delay(5);
     }
 
     console.log("No longer running loop");
-    
 });
 
 
@@ -195,7 +203,7 @@ function findMatchingCard(text){
 
         if (indexOfWord != -1) {
             indexOfTargetWord = ((indexOfWord+1) % 2);
-            console.log(indexOfWord, indexOfTargetWord, thisDefinition[indexOfTargetWord]);
+            // console.log(indexOfWord, indexOfTargetWord, thisDefinition[indexOfTargetWord]);
             return thisDefinition[indexOfTargetWord];
         }
     }

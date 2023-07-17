@@ -1,0 +1,26 @@
+.matchSolverText {
+    /* color: gray; */
+    opacity: .6;
+}
+
+.matchSolverText.thinking::after {
+    position: absolute;
+    content: "";
+    width: .75em;
+    /* height: 59px; */
+    
+    height: 4px;
+    transform: translateY(1em);
+    
+    background-color: gray;
+    
+    margin-left: 10px;
+
+    animation: blink 1200ms linear infinite;
+}
+
+@keyframes blink {
+    50% {
+        opacity: 0;
+    }
+}

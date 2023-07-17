@@ -37,8 +37,25 @@ console.log(path);
 window.addEventListener('load', async() => {
     console.log("Window loaded");
 
+    shouldStartGame = document.querySelector('button[aria-label="Start game"]') != null;
+
+    if (shouldStartGame) {
+        solverStatusText = document.createElement("span");
+        solverStatusText.innerText = "Fetching cards";
+    
+        solverStatusText.classList.add("matchSolverText");
+        solverStatusText.classList.add("thinking");
+    
+        document.querySelector('button[aria-label="Start game"]').parentElement.parentElement.appendChild(solverStatusText);
+        document.querySelector('button[aria-label="Start game"]').setAttribute("disabled", "");
+    
+        console.log("Fetching quizlet match answers ...");
+    }
+
+
     // Grab the Quizlet cards and add them to the definitions list. This makes it so the user doesn't have to do this manually
     quizletMatchInfo = await getQuizletCards(thisID);
+    
     definitions = [];
 
     for (var i = 0; i < quizletMatchInfo.length; i++) {
@@ -50,17 +67,29 @@ window.addEventListener('load', async() => {
     }
 
     console.log(definitions);
-
+    
     let remainingTiles = [];
     for (var i=0; i < definitions.length; i++) {
         remainingTiles.push(definitions[i][0]);
     }
     
-    startButton = document.getElementsByClassName('MatchModeInstructionsModal MatchModeInstructionsModal--normal');
-    gameStarted = startButton.length == 0;
-    if(!gameStarted){
-        console.log("Starting game ...");
-        document.querySelector('button[aria-label="Start game"]').click();
+    if (shouldStartGame) {
+        solverStatusText.innerHTML = "Fetched cards &check;"
+        solverStatusText.classList.remove("thinking");
+
+        document.querySelector('button[aria-label="Start game"]').removeAttribute("disabled");
+        
+        waitForButtonClick = async function (element) {
+            return new Promise((resolve, reject) => {
+                element.addEventListener("click", () => {
+                    resolve();
+                });
+            });
+        }
+        
+        await waitForButtonClick(document.querySelector('button[aria-label="Start game"]'));
+        
+        console.log("Start button clicked");
     }
 
     while (running) {
@@ -103,13 +132,13 @@ window.addEventListener('load', async() => {
         }
 
         console.log("Working Tile: ", gameboard[0])
-        workingTile = document.querySelector("div[aria-label='" + gameboard[0] + "']");
+        workingTile = document.querySelector("div[aria-label='" + gameboard[0].replace("'", "\\'").replace('"', '\\"').replace("`", "\\`") + "']");
         workingTile.parentElement.parentElement.dispatchEvent(new PointerEvent('pointerdown'));
         
         // await delay(1);
         
         matchingCardText = findMatchingCard(gameboard[0])
-        matchingTile = document.querySelector("div[aria-label='" + matchingCardText + "']");
+        matchingTile = document.querySelector("div[aria-label='" + matchingCardText.replace("'", "\\'").replace('"', '\\"').replace("`", "\\`") + "']");
 
         matchingTile.parentElement.parentElement.dispatchEvent(new PointerEvent('pointerdown'));
         

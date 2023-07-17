@@ -1,6 +1,4 @@
-function delay(ms) {
-    return new Promise(resolve => setTimeout(resolve, ms));
-}
+function delay(ms) { return new Promise(resolve => setTimeout(resolve, ms)); }
 
 // Get elements with a specific aria-label (for getting card elements)
 // Useful because querySelector doesn't allow newlines, and we don't have to filter the matching card's text
@@ -16,7 +14,7 @@ function getElementFromAriaLabel(text, elementType="div") {
         }
     }
 
-    console.error(`Unable to find elemnt with aria-label of "${text}"`);
+    console.warn(`Unable to find elemnt with aria-label of "${text}"`);
     return null;
 }
 
@@ -25,9 +23,17 @@ console.log('Loading Quizlet match solver ...');
 const path = window.location.pathname;
 console.log(path);
 
-// Only continue if the website ends with /match.
+const autoStart = false;
+
+
+// Force the user to go to /micromatch, which has clickable cards instead of draggable cards
+if (path.endsWith("/match")) {
+    window.location = path.replace("/match", "/micromatch");
+}
+
+// Only continue if the website ends with /micromatch.
 // Wraps the rest of the script as actually ending execution of a javascript file involves raising an error
-if (path.endsWith('/match')) {
+if (path.endsWith('/micromatch')) {
 
 thisID = path.split("/")[1];
 
@@ -70,7 +76,6 @@ window.addEventListener('load', async() => {
         console.log("Fetching quizlet match answers ...");
     }
 
-
     // Grab the Quizlet cards and add them to the definitions list. This makes it so the user doesn't have to do this manually
     quizletMatchInfo = await getQuizletCards(thisID);
     
@@ -92,17 +97,22 @@ window.addEventListener('load', async() => {
 
         startButton.removeAttribute("disabled");
         
-        waitForButtonClick = async function (element) {
-            return new Promise((resolve, reject) => {
-                element.addEventListener("click", () => {
-                    resolve();
+        if (autoStart) {
+            startButton.click();
+        } else {
+            waitForButtonClick = async function (element) {
+                return new Promise((resolve, reject) => {
+                    element.addEventListener("click", () => {
+                        resolve();
+                    });
                 });
-            });
+            }
+            
+            await waitForButtonClick(startButton);
+            
+            console.log("Start button clicked");
         }
         
-        await waitForButtonClick(startButton);
-        
-        console.log("Start button clicked");
 
         await delay(1); // Allow time for the button to fade away before continuing 
     }
@@ -142,20 +152,20 @@ window.addEventListener('load', async() => {
 
         console.log("Working Tile: ", gameboard[0])
         firstTile = getElementFromAriaLabel(gameboard[0], "div");
-        firstTile.parentElement.parentElement.dispatchEvent(new PointerEvent('pointerdown')); // Essentially click the element
         
         matchingCardText = findMatchingCard(gameboard[0])
         matchingTile = getElementFromAriaLabel(matchingCardText, "div");
-
+        
         // we can't find the matching card, perhaps the card has an image
-        if (matchingTile == null) {
+        if (matchingTile == null || firstTile == null) {
+            console.warn("Unabled to complete Quizlet Matching ... exiting ...");
             return; // welp, we tried
         }
-
+        
+        firstTile.parentElement.parentElement.dispatchEvent(new PointerEvent('pointerdown')); // Essentially click the element
         matchingTile.parentElement.parentElement.dispatchEvent(new PointerEvent('pointerdown'));
         
         await waitUntilNoHTML(gameboardTilesList[0]);
-        // await delay(5);
     }
 
     console.log("No longer running loop");

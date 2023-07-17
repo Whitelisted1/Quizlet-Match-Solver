@@ -6,3 +6,5 @@ This tool is still a proof of concept, do not expect actual quality and polishin
 * [ ] Add a popup containing options
 * [ ] Add support for cards with newlines (\n)
 * [ ] Add a cache for cards so we don't have to constantly fetch them
+* [ ] Refactor code
+    * [ ] Add comments for readability

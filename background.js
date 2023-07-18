@@ -38,7 +38,7 @@ if (path.endsWith('/micromatch')) {
 
 thisID = path.split("/")[1];
 
-// Modified version of https://www.thiscodeworks.com/get-quizlet-flashcards-via-api/61bbc4382e046e00150bd05b
+// Modified version of https://gist.github.com/Explosion-Scratch/154792ea7faf4254c9abdcd771e68868
 // Get the matching word and definition for each card
 async function getQuizletCards(id){
     // Fetch the cards from Quizlet, asking for the maximum number of possible cards in a set (1000)

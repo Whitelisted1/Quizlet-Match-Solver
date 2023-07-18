@@ -20,11 +20,12 @@ function getElementFromAriaLabel(text, elementType="div") {
 
 console.log('Loading Quizlet match solver ...');
 
-const path = window.location.pathname;
-console.log(path);
-
+// Constants for testing purposes. Might be added into a settings menu at a later date
 const autoStart = false;
 
+// The path of the window. Used to identify if this is a match game
+const path = window.location.pathname;
+console.log(path);
 
 // Force the user to go to /micromatch, which has clickable cards instead of draggable cards
 if (path.endsWith("/match")) {
@@ -37,69 +38,61 @@ if (path.endsWith('/micromatch')) {
 
 thisID = path.split("/")[1];
 
-// https://www.thiscodeworks.com/get-quizlet-flashcards-via-api/61bbc4382e046e00150bd05b
+// Modified version of https://www.thiscodeworks.com/get-quizlet-flashcards-via-api/61bbc4382e046e00150bd05b
+// Get the matching word and definition for each card
 async function getQuizletCards(id){
-    let res = await fetch(`https://quizlet.com/webapi/3.4/studiable-item-documents?filters%5BstudiableContainerId%5D=${id}&filters%5BstudiableContainerType%5D=1&perPage=5&page=1`).then(res => res.json())
+    // Fetch the cards from Quizlet, asking for the maximum number of possible cards in a set (1000)
+    let res = await fetch(`https://quizlet.com/webapi/3.4/studiable-item-documents?filters%5BstudiableContainerId%5D=${id}&filters%5BstudiableContainerType%5D=1&perPage=1000&page=1`).then(res => res.json());
 
-    let currentLength = 5;
-    let token = res.responses[0].paging.token
-    let terms = res.responses[0].models.studiableItem;
-    let page = 2;
-
-    while (currentLength >= 5){
-        let res = await fetch(`https://quizlet.com/webapi/3.4/studiable-item-documents?filters%5BstudiableContainerId%5D=${id}&filters%5BstudiableContainerType%5D=1&perPage=5&page=${page++}&pagingToken=${token}`).then(res => res.json());
-        terms.push(...res.responses[0].models.studiableItem);
-        currentLength = res.responses[0].models.studiableItem.length;
-        token = res.responses[0].paging.token;
-    }
-
-    return terms;
+    return [...res.responses[0].models.studiableItem]; // Return the results
 }
 
 let running = true;
 window.addEventListener('load', async() => {
     console.log("Window loaded");
 
-    let startButton = document.querySelector('button[aria-label="Start game"]')
+    let startButton = document.querySelector('button[aria-label="Start game"]');
     shouldStartGame = startButton != null;
 
+    // Add the "Fetching cards ..." text under the "Start game" button
     if (shouldStartGame) {
+        startButton.setAttribute("disabled", ""); // Don't allow the user to click the start button
+
         solverStatusText = document.createElement("span");
         solverStatusText.innerText = "Fetching cards";
     
-        solverStatusText.classList.add("matchSolverText");
-        solverStatusText.classList.add("thinking");
+        solverStatusText.classList.add("matchSolverText"); // "Fetching cards" text
+        solverStatusText.classList.add("thinking"); // Blinking cursor animation
     
-        startButton.parentElement.parentElement.appendChild(solverStatusText);
-        startButton.setAttribute("disabled", "");
-    
-        console.log("Fetching quizlet match answers ...");
+        startButton.parentElement.parentElement.appendChild(solverStatusText); // Actually display the text
     }
-
+    
+    console.log("Fetching quizlet match answers ...");
     // Grab the Quizlet cards and add them to the definitions list. This makes it so the user doesn't have to do this manually
     quizletMatchInfo = await getQuizletCards(thisID);
     
     definitions = [];
-
     for (var i = 0; i < quizletMatchInfo.length; i++) {
         thisItem = quizletMatchInfo[i];
 
         if (thisItem.isDeleted) continue;
         
-        definitions.push([ thisItem.cardSides[0].media[0].plainText, thisItem.cardSides[1].media[0].plainText ])
+        definitions.push([ thisItem.cardSides[0].media[0].plainText, thisItem.cardSides[1].media[0].plainText ]);
     }
-
     console.log(definitions);
     
+    // If the start button isn't there, that means the user might have already clicked it.
+    // If this hasn't happened, we wait for the button to be clicked and then continue with the program
     if (shouldStartGame) {
-        solverStatusText.innerHTML = "Fetched cards &check;"
+        solverStatusText.innerHTML = "Fetched cards &check;" // Let the user know we fetched the cards (Maybe show progress?)
         solverStatusText.classList.remove("thinking");
 
-        startButton.removeAttribute("disabled");
+        startButton.removeAttribute("disabled"); // Allow the user to click the start button
         
         if (autoStart) {
-            startButton.click();
+            startButton.click(); // Start the game
         } else {
+            // Wait for the button to be clicked, andthen continue
             waitForButtonClick = async function (element) {
                 return new Promise((resolve, reject) => {
                     element.addEventListener("click", () => {
@@ -120,18 +113,17 @@ window.addEventListener('load', async() => {
 
     // Main loop. Loops through tiles and finds their counterpart, then clicks them both.
     while (running) {
-        console.log('updating ...');
-        
         gameboard = [];
         gameboardTilesList = [];
         
-        // Get the tiles
+        // Get the current tiles
         gameboardTiles = document.getElementsByClassName('MatchModeQuestionGridBoard-tiles')[0].childNodes;
         if (gameboardTiles == undefined) {
             console.log("No child nodes ... ");
             break;
         }
         
+        // Loop through the tiles and allow us to use the information from them
         for (var y = 0; y < gameboardTiles.length; y++) {
             if (gameboardTiles[y].innerHTML == "") {
                 console.log(gameboardTiles[y] + " tile is empty");
@@ -142,29 +134,33 @@ window.addEventListener('load', async() => {
             gameboard.push(gameboardTiles[y].firstElementChild.innerText);
         }
         
+        // The gameboard is empty, so we don't have any more cards to click
         if (gameboard.length === 0) {
             console.log("Gameboard is empty ...");
             running = false;
-            continue;
+            break;
         }
 
         console.log(gameboard);
 
         console.log("Working Tile: ", gameboard[0])
-        firstTile = getElementFromAriaLabel(gameboard[0], "div");
+        // firstTile = getElementFromAriaLabel(gameboard[0], "div"); // Fetch the first card
+        firstTile = gameboardTilesList[0].firstChild.firstChild.firstChild; // Get the first card using the first element in the gameboardTiles list
         
-        matchingCardText = findMatchingCard(gameboard[0])
-        matchingTile = getElementFromAriaLabel(matchingCardText, "div");
+        matchingCardText = findMatchingCard(gameboard[0]); // Get the word/definition's text
+        matchingTile = getElementFromAriaLabel(matchingCardText, "div"); // Get the card with the text
         
-        // we can't find the matching card, perhaps the card has an image
+        // we can't find the matching card, perhaps the card has an image. Currently, we are unable to use this
         if (matchingTile == null || firstTile == null) {
             console.warn("Unabled to complete Quizlet Matching ... exiting ...");
             return; // welp, we tried
         }
         
-        firstTile.parentElement.parentElement.dispatchEvent(new PointerEvent('pointerdown')); // Essentially click the element
+        // Click both the first and second tile
+        firstTile.parentElement.parentElement.dispatchEvent(new PointerEvent('pointerdown'));
         matchingTile.parentElement.parentElement.dispatchEvent(new PointerEvent('pointerdown'));
         
+        // Wait for the tiles to disappear
         await waitUntilNoHTML(gameboardTilesList[0]);
     }
 
@@ -205,6 +201,7 @@ async function waitUntilNoHTML(element) {
 }
 
 // Given a text input, find the text of the matching word/definition
+// Likely a better way to do this
 function findMatchingCard(text){
     for (var i=0; i < definitions.length; i++){
         var thisDefinition = definitions[i];
@@ -213,7 +210,6 @@ function findMatchingCard(text){
 
         if (indexOfWord != -1) {
             indexOfTargetWord = ((indexOfWord+1) % 2);
-            // console.log(indexOfWord, indexOfTargetWord, thisDefinition[indexOfTargetWord]);
             return thisDefinition[indexOfTargetWord];
         }
     }

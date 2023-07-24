@@ -1,23 +1,3 @@
-function delay(ms) { return new Promise(resolve => setTimeout(resolve, ms)); }
-
-// Get elements with a specific aria-label (for getting card elements)
-// Useful because querySelector doesn't allow newlines, and we don't have to filter the matching card's text
-function getElementFromAriaLabel(text, elementType="div") {
-    const divElements = Array.from(document.querySelectorAll(elementType));
-
-    for (var i = 0; i < divElements.length; i++) {
-        element = divElements[i];
-        if (!element.hasAttribute("aria-label")) continue;
-
-        if (element.getAttribute("aria-label") == text) {
-            return element;
-        }
-    }
-
-    console.warn(`Unable to find elemnt with aria-label of "${text}"`);
-    return null;
-}
-
 console.log('Loading Quizlet match solver ...');
 
 // Constants for testing purposes. Might be added into a settings menu at a later date
@@ -38,6 +18,9 @@ if (path.endsWith('/micromatch')) {
 
 thisID = path.split("/")[1];
 
+// Wait for a specific amount of ms
+function delay(ms) { return new Promise(resolve => setTimeout(resolve, ms)); }
+
 // Modified version of https://gist.github.com/Explosion-Scratch/154792ea7faf4254c9abdcd771e68868
 // Get the matching word and definition for each card
 async function getQuizletCards(id){
@@ -47,72 +30,9 @@ async function getQuizletCards(id){
     return [...res.responses[0].models.studiableItem]; // Return the results
 }
 
-let running = true;
-window.addEventListener('load', async() => {
-    console.log("Window loaded");
-
-    let startButton = document.querySelector('button[aria-label="Start game"]');
-    shouldStartGame = startButton != null;
-
-    // Add the "Fetching cards ..." text under the "Start game" button
-    if (shouldStartGame) {
-        startButton.setAttribute("disabled", ""); // Don't allow the user to click the start button
-
-        solverStatusText = document.createElement("span");
-        solverStatusText.innerText = "Fetching cards";
-    
-        solverStatusText.classList.add("matchSolverText"); // "Fetching cards" text
-        solverStatusText.classList.add("thinking"); // Blinking cursor animation
-    
-        startButton.parentElement.parentElement.appendChild(solverStatusText); // Actually display the text
-    }
-    
-    console.log("Fetching quizlet match answers ...");
-    // Grab the Quizlet cards and add them to the definitions list. This makes it so the user doesn't have to do this manually
-    quizletMatchInfo = await getQuizletCards(thisID);
-    
-    definitions = [];
-    for (var i = 0; i < quizletMatchInfo.length; i++) {
-        thisItem = quizletMatchInfo[i];
-
-        if (thisItem.isDeleted) continue;
-        
-        definitions.push([ thisItem.cardSides[0].media[0].plainText, thisItem.cardSides[1].media[0].plainText ]);
-    }
-    console.log(definitions);
-    
-    // If the start button isn't there, that means the user might have already clicked it.
-    // If this hasn't happened, we wait for the button to be clicked and then continue with the program
-    if (shouldStartGame) {
-        solverStatusText.innerHTML = "Fetched cards &check;" // Let the user know we fetched the cards (Maybe show progress?)
-        solverStatusText.classList.remove("thinking");
-
-        startButton.removeAttribute("disabled"); // Allow the user to click the start button
-        
-        if (autoStart) {
-            startButton.click(); // Start the game
-        } else {
-            // Wait for the button to be clicked, andthen continue
-            waitForButtonClick = async function (element) {
-                return new Promise((resolve, reject) => {
-                    element.addEventListener("click", () => {
-                        resolve();
-                    });
-                });
-            }
-            
-            await waitForButtonClick(startButton);
-            
-            console.log("Start button clicked");
-        }
-        
-
-        await delay(1); // Allow time for the button to fade away before continuing 
-    }
-
-
-    // Main loop. Loops through tiles and finds their counterpart, then clicks them both.
-    while (running) {
+// Main loop. Loops through tiles and finds their counterpart, then clicks them both.
+async function matchGame(){
+    while (true) {
         gameboard = [];
         gameboardTilesList = [];
         
@@ -130,6 +50,7 @@ window.addEventListener('load', async() => {
                 continue; // If the element is empty (it already clicked this element), then skip it
             }
             
+            // Add the values to the tiles list and the current gameboard
             gameboardTilesList.push(gameboardTiles[y]);
             gameboard.push(gameboardTiles[y].firstElementChild.innerText);
         }
@@ -137,7 +58,6 @@ window.addEventListener('load', async() => {
         // The gameboard is empty, so we don't have any more cards to click
         if (gameboard.length === 0) {
             console.log("Gameboard is empty ...");
-            running = false;
             break;
         }
 
@@ -163,13 +83,6 @@ window.addEventListener('load', async() => {
         // Wait for the tiles to disappear
         await waitUntilNoHTML(gameboardTilesList[0]);
     }
-
-    console.log("No longer running loop");
-});
-
-
-function matchGame(){
-    
 }
 
 // watch an element until it is blank. Used for waiting for cards to disappear.
@@ -215,4 +128,92 @@ function findMatchingCard(text){
     }
 }
 
-}   
+// Get elements with a specific aria-label (for getting card elements)
+// Useful because querySelector doesn't allow newlines, and we don't have to filter the matching card's text
+function getElementFromAriaLabel(text, elementType="div") {
+    const divElements = Array.from(document.querySelectorAll(elementType));
+
+    for (var i = 0; i < divElements.length; i++) {
+        element = divElements[i];
+        if (!element.hasAttribute("aria-label")) continue;
+
+        if (element.getAttribute("aria-label") == text) {
+            return element;
+        }
+    }
+
+    console.warn(`Unable to find elemnt with aria-label of "${text}"`);
+    return null;
+}
+
+// Actually wait for the window to load and then continue
+window.addEventListener('load', async() => {
+    console.log("Window loaded");
+
+    let startButton = document.querySelector('button[aria-label="Start game"]');
+    shouldStartGame = startButton != null;
+
+    // Add the "Fetching cards ..." text under the "Start game" button
+    if (shouldStartGame) {
+        startButton.setAttribute("disabled", ""); // Don't allow the user to click the start button
+
+        solverStatusText = document.createElement("span");
+        solverStatusText.innerText = "Fetching cards";
+    
+        solverStatusText.classList.add("matchSolverText"); // "Fetching cards" text
+        solverStatusText.classList.add("thinking"); // Blinking cursor animation
+    
+        startButton.parentElement.parentElement.appendChild(solverStatusText); // Actually display the text
+    }
+    
+    console.log("Fetching quizlet match answers ...");
+
+    // Grab the Quizlet cards and add them to the definitions list. This makes it so the user doesn't have to do this manually
+    quizletMatchInfo = await getQuizletCards(thisID);
+    
+    definitions = [];
+    for (var i = 0; i < quizletMatchInfo.length; i++) {
+        thisItem = quizletMatchInfo[i];
+
+        if (thisItem.isDeleted) continue;
+        
+        definitions.push([ thisItem.cardSides[0].media[0].plainText, thisItem.cardSides[1].media[0].plainText ]);
+    }
+    console.log(definitions);
+    
+    // If the start button isn't there, that means the user might have already clicked it.
+    // If the button hasn't been clicked, we wait for the button to be clicked and then continue with the program
+    if (shouldStartGame) {
+        solverStatusText.innerHTML = "Fetched cards &check;" // Let the user know we fetched the cards
+        solverStatusText.classList.remove("thinking");
+
+        startButton.removeAttribute("disabled"); // Allow the user to click the start button
+        
+        if (autoStart) {
+            startButton.click(); // Start the game
+        } else {
+            // Wait for the button to be clicked, and then continue
+            waitForButtonClick = async function (element) {
+                return new Promise((resolve, reject) => {
+                    element.addEventListener("click", () => {
+                        resolve();
+                    });
+                });
+            }
+            
+            await waitForButtonClick(startButton);
+            
+            console.log("Start button clicked");
+        }
+        
+
+        await delay(1); // Allow time for the button to fade away before continuing 
+    }
+
+    // Start the main loop of clicking each tile
+    await matchGame();
+
+    console.log("Finished with matching tiles");
+});
+
+}

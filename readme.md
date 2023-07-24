@@ -7,5 +7,5 @@ This tool is still a proof of concept, do not expect actual quality and polishin
 * [X] Add support for cards with newlines (\n)
 * [ ] Add a cache for cards so we don't have to constantly fetch them from the server
 * [ ] Add support for images on cards
-* [ ] Refactor code
-    * [ ] Add comments for readability
+* [X] Refactor code
+    * [X] Add comments for readability

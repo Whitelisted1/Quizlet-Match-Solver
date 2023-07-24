@@ -142,7 +142,7 @@ function getElementFromAriaLabel(text, elementType="div") {
         }
     }
 
-    console.warn(`Unable to find elemnt with aria-label of "${text}"`);
+    console.warn(`Unable to find element with aria-label of "${text}"`);
     return null;
 }
 

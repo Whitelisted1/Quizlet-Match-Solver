@@ -9,3 +9,6 @@ This tool is still a proof of concept, do not expect actual quality and polishin
 * [ ] Add support for images on cards
 * [X] Refactor code
     * [X] Add comments for readability
+
+## This tool in action
+<img src="assets/examples/Quizlet Match Solver.gif" width="580px">

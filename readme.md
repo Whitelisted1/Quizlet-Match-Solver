@@ -1,6 +1,8 @@
 # Quizlet Match Solver
 This tool is still a proof of concept, do not expect actual quality and polishing (as of now).
 
+This tool can be used in Chromium browsers, follow the [install guide](#install-guide) in order to install it
+
 As of now the tool can solve Quizlet Matches in half a second (any lower is disregarded by Quizlet)
 
 ## Todo
@@ -15,3 +17,12 @@ As of now the tool can solve Quizlet Matches in half a second (any lower is disr
 
 ## This tool in action
 <img src="assets/examples/Quizlet Match Solver.gif" width="580px">
+
+## Install guide
+1. Download the GitHub repo by clicking the green "Code" button and clicking "Download ZIP"
+    * Alternatively, click [here](https://github.com/Whitelisted1/Quizlet_Match_Solver/archive/refs/heads/main.zip)
+2. Unzip the .zip file (If you don't know how, there are plenty of guides online)
+3. Go to the URL `chrome://extensions`
+4. Enable the Developer Mode toggle
+5. Click "Load unpacked" and navigate to the extracted folder
+6. Click "Select Folder" and the extension should load

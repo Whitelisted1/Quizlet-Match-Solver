@@ -161,12 +161,12 @@ window.addEventListener('load', async() => {
         targetTimeInput = document.createElement("input"); // Target time for solving the quizlet
         targetTimeInput.type = "number";
         targetTimeInput.min = "500";
-        targetTimeInput.value = "2000";
-        targetTimeInput.placeholder = "2000";
+        targetTimeInput.value = "1500";
+        targetTimeInput.placeholder = "1500";
         targetTimeInput.style.width = "64px";
 
         targetTimeInput.addEventListener("change", (e)=> {
-            if (e.target.value == "") e.target.value = "2000";
+            if (e.target.value == "") e.target.value = "1500";
             else if (parseInt(e.target.value) < 500) e.target.value = "500";
         });
 

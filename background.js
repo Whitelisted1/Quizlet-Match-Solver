@@ -1,3 +1,14 @@
+// for debugging and identifying logs
+LOGGING = console.log
+console.log = (text) => {
+    if (typeof text == "string") {
+        LOGGING("[Quizlet Match Solver] " + text.toString());
+    } else {
+        LOGGING(text);
+    }
+}
+
+
 console.log('Loading Quizlet match solver ...');
 
 // Constants for testing purposes. Might be added into a settings menu at a later date
@@ -31,8 +42,15 @@ async function getQuizletCards(id){
 }
 
 // Main loop. Loops through tiles and finds their counterpart, then clicks them both.
-async function matchGame(){
+async function matchGame(targetTime){
+    targetUnix = Date.now() + targetTime;
+
+    // Just so we don't freeze the browser somehow
+    iterations = 20;
     while (true) {
+        iterations--;
+        if (iterations == 0) return;
+
         gameboard = [];
         gameboardTilesList = [];
         
@@ -48,6 +66,11 @@ async function matchGame(){
             if (gameboardTiles[y].innerHTML == "") {
                 console.log(gameboardTiles[y] + " tile is empty");
                 continue; // If the element is empty (it already clicked this element), then skip it
+            }
+
+            if (gameboardTiles[y].firstChild.classList.contains('is-correct')) {
+                console.log(gameboardTiles[y] + " is correct");
+                continue;
             }
             
             // Add the values to the tiles list and the current gameboard
@@ -75,42 +98,14 @@ async function matchGame(){
             console.warn("Unabled to complete Quizlet Matching ... exiting ...");
             return; // welp, we tried
         }
-        
+
         // Click both the first and second tile
         firstTile.parentElement.parentElement.dispatchEvent(new PointerEvent('pointerdown'));
         matchingTile.parentElement.parentElement.dispatchEvent(new PointerEvent('pointerdown'));
-        
-        // Wait for the tiles to disappear
-        await waitUntilNoHTML(gameboardTilesList[0]);
+
+        // In order to get the target time
+        await delay( (targetUnix - Date.now()) / ((gameboardTilesList.length-2)/2) );
     }
-}
-
-// watch an element until it is blank. Used for waiting for cards to disappear.
-async function waitUntilNoHTML(element) {
-    return new Promise((resolve, reject) => {
-        const observer = new MutationObserver((mutationsList) => {
-            const hasInnerHTMLChanged = mutationsList.some(
-                (mutation) => mutation.type === 'childList' && mutation.target === element
-            );
-
-            if (hasInnerHTMLChanged) {
-                if (element.innerHTML == "") {
-                    console.log("innerHTML is now blank");
-                    observer.disconnect();
-                    resolve();
-                }
-            }
-        });
-
-        // Configure and start observing the target element
-        observer.observe(element, { childList: true, subtree: true });
-
-        // Check initial state
-        if (element.innerHTML === "") {
-            observer.disconnect();
-            resolve();
-        }
-    });
 }
 
 // Given a text input, find the text of the matching word/definition
@@ -162,8 +157,33 @@ window.addEventListener('load', async() => {
     
         solverStatusText.classList.add("matchSolverText"); // "Fetching cards" text
         solverStatusText.classList.add("thinking"); // Blinking cursor animation
-    
-        startButton.parentElement.parentElement.appendChild(solverStatusText); // Actually display the text
+
+        targetTimeInput = document.createElement("input"); // Target time for solving the quizlet
+        targetTimeInput.type = "number";
+        targetTimeInput.min = "500";
+        targetTimeInput.value = "2000";
+        targetTimeInput.placeholder = "2000";
+        targetTimeInput.style.width = "64px";
+
+        targetTimeInput.addEventListener("change", (e)=> {
+            if (e.target.value == "") e.target.value = "2000";
+            else if (parseInt(e.target.value) < 500) e.target.value = "500";
+        });
+
+        targetTimeInputLabel = document.createElement("span");
+        targetTimeInputLabel.innerText = "Target Time: ";
+        targetTimeInputLabel.title = "How long should the Quizlet take to solve?";
+
+        targetTimeInputLabel2 = document.createElement("span");
+        targetTimeInputLabel2.innerText = " ms";
+        targetTimeInputLabel2.title = "Time in milliseconds (1 second = 1000 ms)";
+
+        startButtonContainer = startButton.parentElement.parentElement;
+        startButtonContainer.appendChild(solverStatusText); // Actually display the text
+        startButtonContainer.appendChild(document.createElement("br"));
+        startButtonContainer.appendChild(targetTimeInputLabel);
+        startButtonContainer.appendChild(targetTimeInput);
+        startButtonContainer.appendChild(targetTimeInputLabel2);
     }
     
     console.log("Fetching quizlet match answers ...");
@@ -211,7 +231,7 @@ window.addEventListener('load', async() => {
     }
 
     // Start the main loop of clicking each tile
-    await matchGame();
+    await matchGame(parseInt(targetTimeInput.value));
 
     console.log("Finished with matching tiles");
 });

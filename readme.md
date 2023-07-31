@@ -1,4 +1,4 @@
-# Quizlet Math Solver
+# Quizlet Match Solver
 This tool is still a proof of concept, do not expect actual quality and polishing (as of now).
 
 As of now the tool can solve Quizlet Matches in half a second (any lower is disregarded by Quizlet)

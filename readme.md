@@ -15,6 +15,7 @@ As of now the tool can solve Quizlet Matches in half a second (any lower is disr
 
 ## This tool in action
 | 2500 ms | 500 ms |
+| ... | ... |
 | <img src="assets/examples/Solver_Example_Old.gif" height="280px"> | <img src="assets/examples/Solver_Example.gif" height="280px"> |
 
 ## Install guide

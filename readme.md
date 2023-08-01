@@ -14,8 +14,8 @@ As of now the tool can solve Quizlet Matches in half a second (any lower is disr
     * [X] Add comments for readability
 
 ## This tool in action
-* Note that the new version of the tool can complete matches in half a second
-<img src="assets/examples/Quizlet Match Solver.gif" width="580px">
+<img src="assets/examples/Solver_Example_Old.gif" height="360px">
+<img src="assets/examples/Solver_Example.gif" height="360px">
 
 ## Install guide
 1. Download the GitHub repo by clicking the green "Code" button and clicking "Download ZIP"

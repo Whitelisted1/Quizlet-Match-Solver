@@ -1,3 +1,19 @@
+async function getData(key){ return new Promise(resolve => { chrome.storage.local.get(key, function (data) { resolve(Object.values(data)[0]); }); }); }
+async function storeData(key, value){ await chrome.storage.local.set({[key]: value}); }
+
+async function getMultipleDataValues(keys){ return new Promise(resolve => { chrome.storage.local.get(keys, function (data) { resolve(data); }); }) }
+async function storeMultipleDataValues(keys){ await chrome.storage.local.set(keys); }
+
+const settingsKeys = [
+    'defaultTargetTime',
+    'accurateTime'
+];
+
+const settingsDefaultValues = [
+    3000,
+    false
+];
+
 // for debugging and identifying logs
 LOGGING = console.log
 console.log = (text) => {
@@ -41,9 +57,29 @@ async function getQuizletCards(id){
     return [...res.responses[0].models.studiableItem]; // Return the results
 }
 
+// Get local settings
+async function getSettings() {
+    settings = await getMultipleDataValues(settingsKeys);
+
+    for (var i = 0; i < settingsKeys.length; i++) {
+        thisKey = settingsKeys[i];
+        thisValue = settings[thisKey];
+        if (thisValue == undefined) {
+            settings[thisKey] = settingsDefaultValues[i];
+            await storeData(thisKey, thisValue);
+        }
+    }
+
+    return settings;
+}
+
 // Main loop. Loops through tiles and finds their counterpart, then clicks them both.
 async function matchGame(targetTime){
     targetUnix = Date.now() + targetTime;
+
+    if (settings['accurateTime']) {
+        await delay( targetTime );
+    }
 
     // Just so we don't freeze the browser somehow
     iterations = 20;
@@ -64,12 +100,12 @@ async function matchGame(targetTime){
         // Loop through the tiles and allow us to use the information from them
         for (var y = 0; y < gameboardTiles.length; y++) {
             if (gameboardTiles[y].innerHTML == "") {
-                console.log(gameboardTiles[y] + " tile is empty");
+                // console.log(gameboardTiles[y] + " tile is empty");
                 continue; // If the element is empty (it already clicked this element), then skip it
             }
 
             if (gameboardTiles[y].firstChild.classList.contains('is-correct')) {
-                console.log(gameboardTiles[y] + " is correct");
+                // console.log(gameboardTiles[y] + " is correct");
                 continue;
             }
             
@@ -104,7 +140,9 @@ async function matchGame(targetTime){
         matchingTile.parentElement.parentElement.dispatchEvent(new PointerEvent('pointerdown'));
 
         // In order to get the target time
-        await delay( (targetUnix - Date.now()) / ((gameboardTilesList.length-2)/2) );
+        if (!settings['accurateTime']) {
+            await delay( (targetUnix - Date.now()) / ((gameboardTilesList.length-2)/2) );
+        }
     }
 }
 
@@ -145,6 +183,8 @@ function getElementFromAriaLabel(text, elementType="div") {
 window.addEventListener('load', async() => {
     console.log("Window loaded");
 
+    settings = await getSettings();
+
     let startButton = document.querySelector('button[aria-label="Start game"]');
     shouldStartGame = startButton != null;
 
@@ -161,7 +201,7 @@ window.addEventListener('load', async() => {
         targetTimeInput = document.createElement("input"); // Target time for solving the quizlet
         targetTimeInput.type = "number";
         targetTimeInput.min = "500";
-        targetTimeInput.value = "2000";
+        targetTimeInput.value = settings['defaultTargetTime'];
         targetTimeInput.placeholder = "2000";
         targetTimeInput.style.width = "64px";
 

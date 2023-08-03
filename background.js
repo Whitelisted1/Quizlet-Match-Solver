@@ -53,7 +53,7 @@ function delay(ms) { return new Promise(resolve => setTimeout(resolve, ms)); }
 // Modified version of https://gist.github.com/Explosion-Scratch/154792ea7faf4254c9abdcd771e68868
 // Get the matching word and definition for each card
 async function getQuizletCards(id){
-    cards = await getData("cardsCache"); // get cards cachce
+    cards = await getData("cardsCache"); // get cards cache
     console.log(cards);
 
     if (cards == undefined) {
@@ -166,7 +166,7 @@ async function matchGame(targetTime){
         
         // we can't find the matching card, perhaps the card has an image. Currently, we are unable to use this
         if (matchingTile == null || firstTile == null) {
-            console.warn("Unabled to complete Quizlet Matching ... exiting ...");
+            console.warn("Unable to complete Quizlet Matching ... exiting ...");
             return; // welp, we tried
         }
 

@@ -41,37 +41,38 @@ async function saveSettings() {
         }
     }
 
-    console.log(storedSettingsValues);
 
     await storeMultipleDataValues(storedSettingsValues);
 }
 
 async function fetchAndDisplaySettings() {
     const settingsValues = await getMultipleDataValues(settingsKeys);
-    console.log(settingsValues);
-    t = 0;
+
     for (var i = 0; i < settingsKeys.length; i++) {
-        t++;
-        console.log(t);
-        if (t > 30) break;
         thisKey = settingsKeys[i];
         thisType = settingsKeyTypes[i];
         keyValue = settingsValues[thisKey];
 
-        console.log(settingsValues);
-
         if (keyValue == undefined) {
             thisKeyDefaultValue = settingsDefaultValues[i];
-            console.log(thisKeyDefaultValue);
             await storeData(thisKey, thisKeyDefaultValue);
             settingsValues[thisKey] = thisKeyDefaultValue;
             i--;
             continue;
         }
 
-        console.log(thisKey, thisType, keyValue);
-
         element = document.getElementById(thisKey);
+
+        element.addEventListener("change", async (e) => {
+            thisType = settingsKeyTypes[ settingsKeys.indexOf(e.srcElement.id) ];
+            
+            if (thisType == STRING_TYPE || thisType == INTEGER_TYPE) {
+                await storeData(e.srcElement.id, e.srcElement.value);
+            }
+            else if (thisType == BOOL_TYPE) {
+                await storeData(e.srcElement.id, e.srcElement.checked);
+            }
+        });
 
         if (thisType == STRING_TYPE || thisType == INTEGER_TYPE) {
             element.value = keyValue;
@@ -89,9 +90,9 @@ window.addEventListener("load", async () => {
         fetchAndDisplaySettings();
     });
 
-    document.getElementById("applySettings").addEventListener("click", () => {
-        saveSettings();
-    });
+    // document.getElementById("applySettings").addEventListener("click", () => {
+    //     saveSettings();
+    // });
 
     await fetchAndDisplaySettings();
 });

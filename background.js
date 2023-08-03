@@ -27,6 +27,8 @@ console.log = (text) => {
 
 console.log('Loading Quizlet match solver ...');
 
+let settings;
+
 // Constants for testing purposes. Might be added into a settings menu at a later date
 const autoStart = false;
 

@@ -9,7 +9,8 @@ As of now the tool can solve Quizlet Matches in half a second (any lower is disr
     * [ ] Make it look better
     * [ ] Add more options
 * [X] Add support for cards with newlines (\n)
-* [ ] Add a cache for cards so we don't have to constantly fetch them from the server
+* [X] Add a cache for cards so we don't have to constantly fetch them from the server
+    * [ ] Customizable cache time
 * [ ] Add support for images on cards
 * [X] Speed up the tool to the minimum Quizlet time
 * [X] Refactor code

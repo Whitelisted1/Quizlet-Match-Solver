@@ -90,6 +90,10 @@ window.addEventListener("load", async () => {
         fetchAndDisplaySettings();
     });
 
+    document.getElementById("resetCardCache").addEventListener("click", () => {
+        storeData("cardsCache", {});
+    });
+
     // document.getElementById("applySettings").addEventListener("click", () => {
     //     saveSettings();
     // });

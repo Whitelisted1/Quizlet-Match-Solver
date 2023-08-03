@@ -53,8 +53,41 @@ function delay(ms) { return new Promise(resolve => setTimeout(resolve, ms)); }
 // Modified version of https://gist.github.com/Explosion-Scratch/154792ea7faf4254c9abdcd771e68868
 // Get the matching word and definition for each card
 async function getQuizletCards(id){
+    cards = await getData("cardsCache"); // get cards cachce
+    console.log(cards);
+
+    if (cards == undefined) {
+        cards = {};
+    } else {
+        keys = Object.keys(cards);
+        
+        if (id in cards) {
+            console.log("Cache for this card set expires in: " + (cards[id].expiresAt - Date.now()) / 1000);
+            if (cards[id].expiresAt - Date.now() > 0) {
+                console.log("Using cache");
+                return [...cards[id].responses[0].models.studiableItem];
+            }
+            
+            console.log("The cache for this card expired");
+            delete cards[id]; // the card expired
+        }
+        
+        if (keys.length > 19) {
+            console.log("The cache length was over 20, removing a card");
+            delete cards[ keys[0] ];
+        }
+    }
+    
     // Fetch the cards from Quizlet, asking for the maximum number of possible cards in a set (1000)
     let res = await fetch(`https://quizlet.com/webapi/3.4/studiable-item-documents?filters%5BstudiableContainerId%5D=${id}&filters%5BstudiableContainerType%5D=1&perPage=1000&page=1`).then(res => res.json());
+    res.expiresAt = Date.now() + (60 * 10) * 1000 // expires in 10 minutes (in case the cards update)
+    cards[id] = res;
+
+    storeData("cardsCache", cards); // don't need to await
+
+    console.log(cards);
+
+    console.log("Fetched card and added to cache");
 
     return [...res.responses[0].models.studiableItem]; // Return the results
 }

@@ -4,14 +4,15 @@ This tool can be used in Chromium browsers, follow the [install guide](#install-
 As of now the tool can solve Quizlet Matches in half a second (any lower is disregarded by Quizlet)
 
 ## Todo
-* [X] Allow the tool to automatically grab the list of words for a specific set of cards from the Quizlet Server
+* [ ] Add support for images on cards
 * [X] Add a popup containing options
-    * [ ] Make it look better
+    * [X] Make it look better
     * [ ] Add more options
-* [X] Add support for cards with newlines (\n)
 * [X] Add a cache for cards so we don't have to constantly fetch them from the server
     * [ ] Customizable cache time
-* [ ] Add support for images on cards
+    * [ ] Customizable cache size
+* [X] Allow the tool to automatically grab the list of words for a specific set of cards from the Quizlet Server
+* [X] Add support for cards with newlines (\n)
 * [X] Speed up the tool to the minimum Quizlet time
 * [X] Refactor code
     * [X] Add comments for readability

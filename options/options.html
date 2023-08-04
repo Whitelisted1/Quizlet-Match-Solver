@@ -6,38 +6,53 @@
         <link rel="stylesheet" href="options.css">
     </head>
     <body>
-        <h1>Quizlet Match Solver</h1>
+        <div id="wrapper">
+            <span id="starSuggestion">Consider leaving a star on GitHub!</span>
 
-        <div id="settings">
-            <h2>Settings</h2>
-            <span class="tooltip">
-                <span>Default Target Time: </span>
-                <input id="defaultTargetTime" type="number" min="500" placeholder="2000">
-                <span> ms</span>
-
-                <span class="tooltipText">
-                    The default time that the tool takes when solving Quizlet Matching Puzzles
-                    <br>
-                    <code>Time in milliseconds (1 second = 1000 ms)</code>
-                </span>
-
+            <h1 class="withSubTitle">Quizlet Match Solver</h1>
+            <span class="subTitle">
+                By <a target="_blank" href="https://github.com/Whitelisted1">Whitelisted</a>
             </span>
-
-            <br>
-
-            <span class="tooltip">
-                <span>Accurate Quizlet Match Time</span>
-                <input id="accurateTime" type="checkbox">
-                <span class="tooltipText">
-                    Clicks on all the Quizlet Cards at the same time, increasing the time accuracy
-                    <br>
-                    It does this by calling <code>setTimeout</code> less, as it has some inaccuracy
+    
+            <div id="settings">
+                <h2>Settings</h2>
+                <span class="tooltip">
+                    <span>Default Target Time: </span>
+                    <input id="defaultTargetTime" type="number" min="500" placeholder="2000">
+                    <span> ms</span>
+    
+                    
+                    <span class="tooltipText">
+                        The default time that the tool takes when solving Quizlet Matching Puzzles
+                        <br>
+                        <code>Time in milliseconds (1 second = 1000 ms)</code>
+                    </span>
+                    
                 </span>
-            </span>
+                
+                <br><br>
+    
+                <span class="tooltip">
+                    <span>Accurate Quizlet Match Time</span>
+                    <input id="accurateTime" type="checkbox">
+                    <span class="tooltipText">
+                        Clicks on all the Quizlet Cards at the same time, increasing the time accuracy
+                        <br>
+                        It does this by calling <code>setTimeout</code> less, as it has some inaccuracy
+                    </span>
+                </span>
+    
+                <br><br>
 
-            <br><br>
-            <button id="resetCardCache">Reset Card Cache</button> <button id="resetSettings">Reset Settings</button>
-            <!-- <button id="applySettings">Apply Settings</button> -->
+                <button id="resetCardCache">Reset Card Cache</button> <button id="resetSettings">Reset Settings</button>
+                <!-- <button id="applySettings">Apply Settings</button> -->
+                
+            </div>
+        </div>
+
+        <div id="buttons">
+            <a target="_blank" href="https://github.com/Whitelisted1/Quizlet-Match-Solver"><button>View on Github</button></a>
+            <a target="_blank" href="https://github.com/Whitelisted1/Quizlet-Match-Solver/issues/new"><button>Report an issue or suggest changes</button></a>
         </div>
 
         <script src="options.js"></script>

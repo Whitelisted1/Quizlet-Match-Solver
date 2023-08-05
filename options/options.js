@@ -11,17 +11,20 @@ const ARRAY_TYPE = 3;
 
 const settingsKeys = [
     'defaultTargetTime',
-    'accurateTime'
+    'accurateTime',
+    'setCacheTime'
 ];
 
 const settingsKeyTypes = [
     INTEGER_TYPE,
-    BOOL_TYPE
+    BOOL_TYPE,
+    INTEGER_TYPE
 ];
 
 const settingsDefaultValues = [
     3000,
-    false
+    false,
+    600
 ];
 
 async function saveSettings() {

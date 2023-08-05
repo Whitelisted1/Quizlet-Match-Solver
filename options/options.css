@@ -47,6 +47,23 @@ html, input, button {
     text-align: center;
 }
 
+fieldset, hr {
+    padding: 20px;
+    /* padding-bottom: 60px; */
+    margin: 10px;
+    /* border: 1px dashed rgb(86, 86, 86); */
+    border: none;
+    border-top: 1px dashed rgb(54, 54, 54);
+    border-bottom: 1px dashed rgb(54, 54, 54);
+
+    transition: border-bottom 1s;
+}
+
+legend {
+    font-size: 1.05rem;
+    font-weight: 500;
+}
+
 .withSubTitle {
     margin-bottom: 0;
 }
@@ -84,9 +101,9 @@ a {
 
     left: -5%;
     top: calc(100% + 10px);
-    transform: translateX(25%);
+    transform: translateX(12.5%);
     
-    transition: opacity 300ms, transform 1s;
+    transition: opacity 300ms, transform 700ms;
     transition-delay: 100ms;
 
     pointer-events: none;
@@ -102,6 +119,10 @@ code {
 .tooltip:hover > .tooltipText {
     transform: translateX(0);
     opacity: 1;
+}
+
+fieldset:has(> .tooltip:hover) {
+    border-bottom: 1px dashed rgba(54, 54, 54, .35);
 }
 
 #buttons {

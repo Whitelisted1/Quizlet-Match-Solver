@@ -14,8 +14,21 @@
                 By <a target="_blank" href="https://github.com/Whitelisted1">Whitelisted</a>
             </span>
     
-            <div id="settings">
-                <h2>Settings</h2>
+
+            
+            <!-- <fieldset id="settings">
+                <h3 class="qTitle"></h3>
+                <div class="questions">
+                    hi
+                </div>
+                
+            </fieldset> -->
+            
+            <br><br>
+            
+            <fieldset id="settings">
+                <legend>Settings</legend>
+                <!-- <h2>Settings</h2> -->
                 <span class="tooltip">
                     <span>Default Target Time: </span>
                     <input id="defaultTargetTime" type="number" min="500" placeholder="2000">
@@ -44,10 +57,23 @@
     
                 <br><br>
 
+                <span class="tooltip">
+                    <span>Quizlet Set Cache Time</span>
+                    <input id="setCacheTime" type="number" min="300" max="86400" placeholder="600">
+                    <span> seconds</span>
+                    <span class="tooltipText">
+                        The time that it takes for a set to be removed from the cache (in seconds).
+                        <br>
+                        If this is too long, the set owner could change the cards
+                    </span>
+                </span>
+
+                <br><br><br>
+
                 <button id="resetCardCache">Reset Card Cache</button> <button id="resetSettings">Reset Settings</button>
                 <!-- <button id="applySettings">Apply Settings</button> -->
                 
-            </div>
+            </fieldset>
         </div>
 
         <div id="buttons">

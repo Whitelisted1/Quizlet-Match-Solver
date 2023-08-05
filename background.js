@@ -6,12 +6,14 @@ async function storeMultipleDataValues(keys){ await chrome.storage.local.set(key
 
 const settingsKeys = [
     'defaultTargetTime',
-    'accurateTime'
+    'accurateTime',
+    'setCacheTime'
 ];
 
 const settingsDefaultValues = [
     3000,
-    false
+    false,
+    600
 ];
 
 // for debugging and identifying logs
@@ -72,15 +74,15 @@ async function getQuizletCards(id){
             delete cards[id]; // the card expired
         }
         
-        if (keys.length > 19) {
-            console.log("The cache length was over 20, removing a card");
+        if (keys.length > 49) {
+            console.log("The cache length was over 50, removing a card");
             delete cards[ keys[0] ];
         }
     }
     
     // Fetch the cards from Quizlet, asking for the maximum number of possible cards in a set (1000)
     let res = await fetch(`https://quizlet.com/webapi/3.4/studiable-item-documents?filters%5BstudiableContainerId%5D=${id}&filters%5BstudiableContainerType%5D=1&perPage=1000&page=1`).then(res => res.json());
-    res.expiresAt = Date.now() + (60 * 10) * 1000 // expires in 10 minutes (in case the cards update)
+    res.expiresAt = Date.now() + settings['setCacheTime'] * 1000 // expires in 10 minutes (in case the cards update)
     cards[id] = res;
 
     storeData("cardsCache", cards); // don't need to await

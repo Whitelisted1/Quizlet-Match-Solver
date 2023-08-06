@@ -225,7 +225,7 @@ function getCardFromAriaLabel(text) {
         element = divElements[i];
         if (!element.hasAttribute("aria-label")) continue;
 
-        if (element.getAttribute("aria-label") == text) {
+        if (element.getAttribute("aria-label").trim() == text.trim()) {
             return element;
         }
     }

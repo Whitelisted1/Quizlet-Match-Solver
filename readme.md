@@ -9,7 +9,7 @@ As of now the tool can solve Quizlet Matches in half a second (any lower is disr
 <img src="assets/examples/Solver_Example.gif" width="580px">
 
 ## Todo
-* [ ] Install guide/usage video
+* [C] Install guide/usage video
 * [X] Add support for images on cards
 * [X] Add a popup containing options
     * [X] Make it look better
@@ -23,6 +23,7 @@ As of now the tool can solve Quizlet Matches in half a second (any lower is disr
     * [X] Add comments for readability
 
 ## Install guide
+[Video Guide](https://youtu.be/ViqrGHTGp4A)
 1. Download the GitHub repo by clicking the green "Code" button and clicking "Download ZIP"
     * Alternatively, click [here](https://github.com/Whitelisted1/Quizlet_Match_Solver/archive/refs/heads/main.zip)
 2. Unzip the `.zip` file (If you don't know how, there are plenty of guides online)

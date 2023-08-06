@@ -16,20 +16,10 @@ const settingsDefaultValues = [
     600
 ];
 
-// for debugging and identifying logs
-LOGGING = console.log
-console.log = (text) => {
-    if (typeof text == "string") {
-        LOGGING("[Quizlet Match Solver] " + text.toString());
-    } else {
-        LOGGING(text);
-    }
-}
-
-
 console.log('Loading Quizlet match solver ...');
 
 let settings;
+let definitions;
 
 // Constants for testing purposes. Might be added into a settings menu at a later date
 const autoStart = false;
@@ -87,8 +77,6 @@ async function getQuizletCards(id){
 
     storeData("cardsCache", cards); // don't need to await
 
-    console.log(cards);
-
     console.log("Fetched card and added to cache");
 
     return [...res.responses[0].models.studiableItem]; // Return the results
@@ -122,10 +110,14 @@ async function matchGame(targetTime){
     iterations = 20;
     while (true) {
         iterations--;
-        if (iterations == 0) return;
+        if (iterations == 0) {
+            console.log("Reached max number of iterations")
+            return;
+        }
 
         gameboard = [];
         gameboardTilesList = [];
+        actualGameboardLength = 0; // since we skip cards that use images
         
         // Get the current tiles
         gameboardTiles = document.getElementsByClassName('MatchModeQuestionGridBoard-tiles')[0].childNodes;
@@ -136,19 +128,27 @@ async function matchGame(targetTime){
         
         // Loop through the tiles and allow us to use the information from them
         for (var y = 0; y < gameboardTiles.length; y++) {
-            if (gameboardTiles[y].innerHTML == "") {
-                // console.log(gameboardTiles[y] + " tile is empty");
+            thisTile = gameboardTiles[y];
+
+            if (thisTile.innerHTML == "") {
                 continue; // If the element is empty (it already clicked this element), then skip it
             }
 
-            if (gameboardTiles[y].firstChild.classList.contains('is-correct')) {
-                // console.log(gameboardTiles[y] + " is correct");
+            if (thisTile.firstChild.classList.contains('is-correct')) {
+                continue; // Skip this element because we already got this card correct
+            }
+            
+            tileText = thisTile.firstElementChild.innerText;
+            actualGameboardLength++;
+            
+            // The text isn't being displayed because the item has an image
+            if (tileText == "...") {
                 continue;
             }
             
             // Add the values to the tiles list and the current gameboard
-            gameboardTilesList.push(gameboardTiles[y]);
-            gameboard.push(gameboardTiles[y].firstElementChild.innerText);
+            gameboardTilesList.push(thisTile);
+            gameboard.push(tileText);
         }
         
         // The gameboard is empty, so we don't have any more cards to click
@@ -156,16 +156,26 @@ async function matchGame(targetTime){
             console.log("Gameboard is empty ...");
             break;
         }
-
         console.log(gameboard);
 
-        console.log("Working Tile: ", gameboard[0])
-        // firstTile = getElementFromAriaLabel(gameboard[0], "div"); // Fetch the first card
-        firstTile = gameboardTilesList[0].firstChild.firstChild.firstChild; // Get the first card using the first element in the gameboardTiles list
-        
+        firstTile = getCardFromAriaLabel(gameboard[0], "div"); // Fetch the first card
         matchingCardText = findMatchingCard(gameboard[0]); // Get the word/definition's text
-        matchingTile = getElementFromAriaLabel(matchingCardText, "div"); // Get the card with the text
         
+        if (matchingCardText.text != "") {
+            matchingTile = getCardFromAriaLabel(matchingCardText.text, "div"); // Get the card with the text
+        } else {
+            matchingTile = null;
+        }
+        // matchingTile = getCardFromAriaLabel(matchingCardText, "div"); // Get the card with the text
+        
+        console.log("First Tile", firstTile);
+        console.log("Matching Tile", matchingTile);
+
+        if (matchingTile == null) {
+            matchingTile = getCardFromImageURL(matchingCardText.url).parentElement.childNodes[1].firstChild;
+            console.log("URL Matching Tile", matchingTile);
+        }
+
         // we can't find the matching card, perhaps the card has an image. Currently, we are unable to use this
         if (matchingTile == null || firstTile == null) {
             console.warn("Unable to complete Quizlet Matching ... exiting ...");
@@ -178,7 +188,7 @@ async function matchGame(targetTime){
 
         // In order to get the target time
         if (!settings['accurateTime']) {
-            await delay( (targetUnix - Date.now()) / ((gameboardTilesList.length-2)/2) );
+            await delay( (targetUnix - Date.now()) / ((actualGameboardLength-2)/2) );
         }
     }
 }
@@ -189,19 +199,27 @@ function findMatchingCard(text){
     for (var i=0; i < definitions.length; i++){
         var thisDefinition = definitions[i];
 
-        indexOfWord = thisDefinition.indexOf(text);
-
+        // indexOfWord = thisDefinition.indexOf(text);
+        indexOfWord = -1;
+        for (var t = 0; t < thisDefinition.length; t++) {
+            if (thisDefinition[t].text == text) {
+                indexOfWord = t;
+                break;
+            }
+        }
+        
         if (indexOfWord != -1) {
             indexOfTargetWord = ((indexOfWord+1) % 2);
-            return thisDefinition[indexOfTargetWord];
+            return { text: thisDefinition[indexOfTargetWord].text, url: thisDefinition[indexOfTargetWord].imgURL };
         }
     }
 }
 
 // Get elements with a specific aria-label (for getting card elements)
 // Useful because querySelector doesn't allow newlines, and we don't have to filter the matching card's text
-function getElementFromAriaLabel(text, elementType="div") {
-    const divElements = Array.from(document.querySelectorAll(elementType));
+function getCardFromAriaLabel(text) {
+    // const divElements = Array.from(document.querySelectorAll(elementType));
+    const divElements = Array.from(document.getElementsByClassName("TermText"));
 
     for (var i = 0; i < divElements.length; i++) {
         element = divElements[i];
@@ -212,7 +230,25 @@ function getElementFromAriaLabel(text, elementType="div") {
         }
     }
 
-    console.warn(`Unable to find element with aria-label of "${text}"`);
+    console.log(`Unable to find element with aria-label of "${text}"!`);
+    return null;
+}
+
+function getCardFromImageURL(text) {
+    const elements = Array.from(document.getElementsByClassName("MatchModeQuestionGridTile-image"));
+
+    for (var i = 0; i < elements.length; i++) {
+        element = elements[i];
+        if (!element.style.backgroundImage) continue;
+
+        elementImgURL = element.style.backgroundImage.slice(5, element.style.backgroundImage.length-2);
+
+        if (elementImgURL == text) {
+            return element;
+        }
+    }
+
+    console.log(`Unable to find element with url of "${text}"!`);
     return null;
 }
 
@@ -273,8 +309,16 @@ window.addEventListener('load', async() => {
         thisItem = quizletMatchInfo[i];
 
         if (thisItem.isDeleted) continue;
+
+        word = {text: thisItem.cardSides[0].media[0].plainText, imgURL: null};
+        definition = {text: thisItem.cardSides[1].media[0].plainText, imgURL: null};
+
+        // Don't do this for the word since you can't add images to them
+        if (thisItem.cardSides[1].media[1] != undefined) {
+            definition.imgURL = thisItem.cardSides[1].media[1]['url']; // type: 2
+        }
         
-        definitions.push([ thisItem.cardSides[0].media[0].plainText, thisItem.cardSides[1].media[0].plainText ]);
+        definitions.push([ word, definition ]);
     }
     console.log(definitions);
     

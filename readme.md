@@ -1,10 +1,16 @@
 # Quizlet Match Solver
+Solves Quizlet Matching Puzzles at customizablbe speeds
+
 This tool can be used in Chromium browsers, follow the [install guide](#install-guide) in order to install it
 
 As of now the tool can solve Quizlet Matches in half a second (any lower is disregarded by Quizlet)
 
+## This tool in action
+<img src="assets/examples/Solver_Example.gif" width="580px">
+
 ## Todo
-* [ ] Add support for images on cards
+* [ ] Install guide/usage video
+* [X] Add support for images on cards
 * [X] Add a popup containing options
     * [X] Make it look better
     * [X] Add more options
@@ -15,9 +21,6 @@ As of now the tool can solve Quizlet Matches in half a second (any lower is disr
 * [X] Speed up the tool to the minimum Quizlet time
 * [X] Refactor code
     * [X] Add comments for readability
-
-## This tool in action
-<img src="assets/examples/Solver_Example.gif" width="580px">
 
 ## Install guide
 1. Download the GitHub repo by clicking the green "Code" button and clicking "Download ZIP"

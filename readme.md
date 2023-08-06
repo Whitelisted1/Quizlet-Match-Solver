@@ -1,5 +1,5 @@
 # Quizlet Match Solver
-Solves Quizlet Matching Puzzles at customizablbe speeds
+Solves Quizlet Matching Puzzles at customizable speeds
 
 This tool can be used in Chromium browsers, follow the [install guide](#install-guide) in order to install it
 

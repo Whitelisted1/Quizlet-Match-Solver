@@ -1,9 +1,9 @@
 .matchSolverText {
     /* color: gray; */
-    opacity: .6;
+    opacity: .9;
 }
 
-.matchSolverText.thinking::after {
+.CardFetchThinking::after {
     position: absolute;
     content: "";
     width: .75em;

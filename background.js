@@ -265,11 +265,13 @@ window.addEventListener('load', async() => {
     if (shouldStartGame) {
         startButton.setAttribute("disabled", ""); // Don't allow the user to click the start button
 
+        matchSolverDiv = document.createElement("div");
+        matchSolverDiv.classList.add("matchSolverText");
+
         solverStatusText = document.createElement("span");
         solverStatusText.innerText = "Fetching cards";
     
-        solverStatusText.classList.add("matchSolverText"); // "Fetching cards" text
-        solverStatusText.classList.add("thinking"); // Blinking cursor animation
+        solverStatusText.classList.add("CardFetchThinking"); // Blinking cursor animation
 
         targetTimeInput = document.createElement("input"); // Target time for solving the quizlet
         targetTimeInput.type = "number";
@@ -291,12 +293,14 @@ window.addEventListener('load', async() => {
         targetTimeInputLabel2.innerText = " ms";
         targetTimeInputLabel2.title = "Time in milliseconds (1 second = 1000 ms)";
 
+        matchSolverDiv.appendChild(solverStatusText); // Actually display the text
+        matchSolverDiv.appendChild(document.createElement("br"));
+        matchSolverDiv.appendChild(targetTimeInputLabel);
+        matchSolverDiv.appendChild(targetTimeInput);
+        matchSolverDiv.appendChild(targetTimeInputLabel2);
+        
         startButtonContainer = startButton.parentElement.parentElement;
-        startButtonContainer.appendChild(solverStatusText); // Actually display the text
-        startButtonContainer.appendChild(document.createElement("br"));
-        startButtonContainer.appendChild(targetTimeInputLabel);
-        startButtonContainer.appendChild(targetTimeInput);
-        startButtonContainer.appendChild(targetTimeInputLabel2);
+        startButtonContainer.appendChild(matchSolverDiv);
     }
     
     console.log("Fetching quizlet match answers ...");
@@ -326,7 +330,7 @@ window.addEventListener('load', async() => {
     // If the button hasn't been clicked, we wait for the button to be clicked and then continue with the program
     if (shouldStartGame) {
         solverStatusText.innerHTML = "Fetched cards &check;" // Let the user know we fetched the cards
-        solverStatusText.classList.remove("thinking");
+        solverStatusText.classList.remove("CardFetchThinking");
 
         startButton.removeAttribute("disabled"); // Allow the user to click the start button
         

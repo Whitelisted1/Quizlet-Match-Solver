@@ -129,3 +129,11 @@ fieldset:has(> .tooltip:hover) {
     position: absolute;
     bottom: 5px;
 }
+
+#updateText {
+    position: absolute;
+    
+    bottom: 45px;
+    left: 50%;
+    transform: translateX(-50%);
+}

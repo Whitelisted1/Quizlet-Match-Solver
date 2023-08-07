@@ -9,7 +9,7 @@ As of now the tool can solve Quizlet Matches in half a second (any lower is disr
 <img src="assets/examples/Solver_Example.gif" width="580px">
 
 ## Todo
-* [ ] Version checker
+* [X] Version checker
 * [X] Install guide/usage video
 * [X] Add support for images on cards
 * [X] Add a popup containing options

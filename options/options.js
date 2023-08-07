@@ -27,6 +27,37 @@ const settingsDefaultValues = [
     600
 ];
 
+async function shouldUpdate() {
+    onlineVersionData = await getData("onlineVersion");
+    if ((onlineVersionData.expiresAt - Date.now() < 0) || onlineVersionData == undefined) {
+        console.log("Fetching remote version");
+        let updateURL = "https://raw.githubusercontent.com/Whitelisted1/Quizlet-Match-Solver/main/manifest.json";
+        
+        res = await fetch(updateURL);
+        onlineManifest = await res.json();
+        onlineVersion = onlineManifest['version'];
+        
+        // Store in cache for a day
+        storeData('onlineVersion', {'version': onlineVersion, expiresAt: Date.now() + 60 * 60 * 24 * 1000});
+    } else {
+        console.log("Using cache for remote version");
+        onlineVersion = onlineVersionData['version'];
+    }
+    
+    let manifestURL = chrome.runtime.getURL('manifest.json');
+    
+    res = await fetch(manifestURL);
+    localManifest = await res.json();
+    localVersion = localManifest['version'];
+
+    if (localVersion != onlineVersion) {
+        console.log("An update is available (" + localVersion + " >> " + onlineVersion + ")");
+
+        updateElement = document.getElementById("updateText");
+        updateElement.innerText = "An update is available (" + localVersion + " >> " + onlineVersion + ")";
+    }
+}
+
 async function saveSettings() {
     storedSettingsValues = { };
 
@@ -102,4 +133,5 @@ window.addEventListener("load", async () => {
     // });
 
     await fetchAndDisplaySettings();
+    shouldUpdate();
 });

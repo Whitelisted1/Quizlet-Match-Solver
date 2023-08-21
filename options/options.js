@@ -10,21 +10,24 @@ const BOOL_TYPE = 2;
 const ARRAY_TYPE = 3;
 
 const settingsKeys = [
+    'extensionEnabled',
     'defaultTargetTime',
     'accurateTime',
     'setCacheTime'
 ];
 
-const settingsKeyTypes = [
-    INTEGER_TYPE,
-    BOOL_TYPE,
-    INTEGER_TYPE
-];
-
 const settingsDefaultValues = [
+    true,
     3000,
     false,
     600
+];
+
+const settingsKeyTypes = [
+    BOOL_TYPE,
+    INTEGER_TYPE,
+    BOOL_TYPE,
+    INTEGER_TYPE
 ];
 
 async function shouldUpdate() {

@@ -5,12 +5,14 @@ async function getMultipleDataValues(keys){ return new Promise(resolve => { chro
 async function storeMultipleDataValues(keys){ await chrome.storage.local.set(keys); }
 
 const settingsKeys = [
+    'extensionEnabled',
     'defaultTargetTime',
     'accurateTime',
     'setCacheTime'
 ];
 
 const settingsDefaultValues = [
+    true,
     3000,
     false,
     600
@@ -257,6 +259,10 @@ window.addEventListener('load', async() => {
     console.log("Window loaded");
 
     settings = await getSettings();
+
+    if (!settings['extensionEnabled']) {
+        return;
+    }
 
     let startButton = document.querySelector('button[aria-label="Start game"]');
     shouldStartGame = startButton != null;

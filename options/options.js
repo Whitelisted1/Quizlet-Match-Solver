@@ -32,7 +32,7 @@ const settingsKeyTypes = [
 
 async function shouldUpdate() {
     onlineVersionData = await getData("onlineVersion");
-    if ((onlineVersionData.expiresAt - Date.now() < 0) || onlineVersionData == undefined) {
+    if (onlineVersionData == undefined || (onlineVersionData.expiresAt - Date.now() < 0)) {
         console.log("Fetching remote version");
         let updateURL = "https://raw.githubusercontent.com/Whitelisted1/Quizlet-Match-Solver/main/manifest.json";
         

@@ -99,7 +99,6 @@ async function matchGame(targetTime){
     if (timeAlreadyPassed == null) {
         timeAlreadyPassed = 0;
     }
-    console.log(timeAlreadyPassed);
     targetUnix = Date.now() + targetTime - 350 - timeAlreadyPassed; // the card animations now take 300 ms
 
     // Just so we don't freeze the browser somehow
@@ -128,8 +127,6 @@ async function matchGame(targetTime){
             rowData = gameboardRows[row].childNodes[0].childNodes;
             for (var y = 0; y < rowData.length; y++) {
                 thisTile = rowData[y];
-
-                console.log(thisTile);
     
                 if (thisTile.innerHTML == "") {
                     continue; // If the element is empty (it already clicked this element), then skip it
@@ -231,7 +228,6 @@ function getCardFromAriaLabel(text) {
     }
 
     console.log(`Unable to find element with aria-label of "${text}"!`);
-    console.log(text);
     return null;
 }
 
@@ -368,16 +364,6 @@ window.addEventListener('load', async() => {
     }
 
     console.log("Finished with matching tiles");
-
-    await delay(1000);
-
-
-    let replayButton = null;
-
-    while (replayButton == null) {
-        replayButton = document.querySelector('button[aria-label="Play again"]');
-        await delay(100);
-    }
 });
 
 }

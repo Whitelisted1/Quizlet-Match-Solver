@@ -30,14 +30,9 @@ const autoStart = false;
 const path = window.location.pathname;
 console.log(path);
 
-// Force the user to go to /micromatch, which has clickable cards instead of draggable cards
-if (path.endsWith("/match")) {
-    window.location = path.replace("/match", "/micromatch");
-}
 
-// Only continue if the website ends with /micromatch.
 // Wraps the rest of the script as actually ending execution of a javascript file involves raising an error
-if (path.endsWith('/micromatch')) {
+if (path.endsWith('/match')) {
 
 thisID = path.split("/")[1];
 
@@ -102,7 +97,12 @@ async function getSettings() {
 
 // Main loop. Loops through tiles and finds their counterpart, then clicks them both.
 async function matchGame(targetTime){
-    targetUnix = Date.now() + targetTime;
+    let timeAlreadyPassed = parseInt(document.getElementsByClassName("AssemblyLink AssemblyLink--medium AssemblyLink--title")[0].firstChild.innerText)*1000
+    if (timeAlreadyPassed == null) {
+        timeAlreadyPassed = 0;
+    }
+    console.log(timeAlreadyPassed);
+    targetUnix = Date.now() + targetTime - 350 - timeAlreadyPassed; // the card animations now take 300 ms
 
     if (settings['accurateTime']) {
         await delay( targetTime );
@@ -117,40 +117,47 @@ async function matchGame(targetTime){
             return;
         }
 
-        gameboard = [];
-        gameboardTilesList = [];
-        actualGameboardLength = 0; // since we skip cards that use images
+        let gameboard = [];
+        let gameboardTilesList = [];
+        let actualGameboardLength = 0; // since we skip cards that use images
         
         // Get the current tiles
-        gameboardTiles = document.getElementsByClassName('MatchModeQuestionGridBoard-tiles')[0].childNodes;
-        if (gameboardTiles == undefined) {
+        let gameboardRows = document.getElementsByClassName('b10wn7cm bpgrkzt')[0].childNodes;
+        if (gameboardRows == undefined) {
             console.log("No child nodes ... ");
             break;
         }
         
         // Loop through the tiles and allow us to use the information from them
-        for (var y = 0; y < gameboardTiles.length; y++) {
-            thisTile = gameboardTiles[y];
+        
+        for (var row = 0; row < gameboardRows.length; row++) {
+            rowData = gameboardRows[row].childNodes[0].childNodes;
+            for (var y = 0; y < rowData.length; y++) {
+                thisTile = rowData[y];
 
-            if (thisTile.innerHTML == "") {
-                continue; // If the element is empty (it already clicked this element), then skip it
+                console.log(thisTile);
+    
+                if (thisTile.innerHTML == "") {
+                    continue; // If the element is empty (it already clicked this element), then skip it
+                }
+    
+                if (thisTile.classList.contains('s1e2e4py')) {
+                    continue; // Skip this element because we already got this card correct
+                }
+                
+                tileText = thisTile.firstElementChild.innerText;
+                tileText = thisTile.firstChild.firstChild.firstChild.getAttribute("aria-label");
+                actualGameboardLength++;
+                
+                // The text isn't being displayed because the item has an image
+                if (tileText == "...") {
+                    continue;
+                }
+                
+                // Add the values to the tiles list and the current gameboard
+                gameboardTilesList.push(thisTile);
+                gameboard.push(tileText);
             }
-
-            if (thisTile.firstChild.classList.contains('is-correct')) {
-                continue; // Skip this element because we already got this card correct
-            }
-            
-            tileText = thisTile.firstElementChild.innerText;
-            actualGameboardLength++;
-            
-            // The text isn't being displayed because the item has an image
-            if (tileText == "...") {
-                continue;
-            }
-            
-            // Add the values to the tiles list and the current gameboard
-            gameboardTilesList.push(thisTile);
-            gameboard.push(tileText);
         }
         
         // The gameboard is empty, so we don't have any more cards to click
@@ -158,13 +165,12 @@ async function matchGame(targetTime){
             console.log("Gameboard is empty ...");
             break;
         }
-        console.log(gameboard);
 
-        firstTile = getCardFromAriaLabel(gameboard[0], "div"); // Fetch the first card
+        firstTile = getCardFromAriaLabel(gameboard[0]); // Fetch the first card
         matchingCardText = findMatchingCard(gameboard[0]); // Get the word/definition's text
         
         if (matchingCardText.text != "") {
-            matchingTile = getCardFromAriaLabel(matchingCardText.text, "div"); // Get the card with the text
+            matchingTile = getCardFromAriaLabel(matchingCardText.text); // Get the card with the text
         } else {
             matchingTile = null;
         }
@@ -185,8 +191,8 @@ async function matchGame(targetTime){
         }
 
         // Click both the first and second tile
-        firstTile.parentElement.parentElement.dispatchEvent(new PointerEvent('pointerdown'));
-        matchingTile.parentElement.parentElement.dispatchEvent(new PointerEvent('pointerdown'));
+        firstTile.parentElement.parentElement.parentElement.click();
+        matchingTile.parentElement.parentElement.parentElement.click();
 
         // In order to get the target time
         if (!settings['accurateTime']) {
@@ -221,7 +227,7 @@ function findMatchingCard(text){
 // Useful because querySelector doesn't allow newlines, and we don't have to filter the matching card's text
 function getCardFromAriaLabel(text) {
     // const divElements = Array.from(document.querySelectorAll(elementType));
-    const divElements = Array.from(document.getElementsByClassName("TermText"));
+    const divElements = Array.from(document.getElementsByClassName("FormattedText"));
 
     for (var i = 0; i < divElements.length; i++) {
         element = divElements[i];
@@ -233,6 +239,7 @@ function getCardFromAriaLabel(text) {
     }
 
     console.log(`Unable to find element with aria-label of "${text}"!`);
+    console.log(text);
     return null;
 }
 
@@ -343,10 +350,11 @@ window.addEventListener('load', async() => {
         if (autoStart) {
             startButton.click(); // Start the game
         } else {
+            console.log(startButton);
             // Wait for the button to be clicked, and then continue
             waitForButtonClick = async function (element) {
                 return new Promise((resolve, reject) => {
-                    element.addEventListener("click", () => {
+                    element.addEventListener("pointerup", () => {
                         resolve();
                     });
                 });
@@ -356,15 +364,28 @@ window.addEventListener('load', async() => {
             
             console.log("Start button clicked");
         }
-        
 
         await delay(1); // Allow time for the button to fade away before continuing 
     }
 
-    // Start the main loop of clicking each tile
-    await matchGame(parseInt(targetTimeInput.value));
+    if (startButton != null) {
+        // Start the main loop of clicking each tile
+        await matchGame(parseInt(targetTimeInput.value));
+    } else {
+        await matchGame(settings['defaultTargetTime']);
+    }
 
     console.log("Finished with matching tiles");
+
+    await delay(1000);
+
+
+    let replayButton = null;
+
+    while (replayButton == null) {
+        replayButton = document.querySelector('button[aria-label="Play again"]');
+        await delay(100);
+    }
 });
 
 }

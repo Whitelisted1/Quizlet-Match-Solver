@@ -7,14 +7,12 @@ async function storeMultipleDataValues(keys){ await chrome.storage.local.set(key
 const settingsKeys = [
     'extensionEnabled',
     'defaultTargetTime',
-    'accurateTime',
     'setCacheTime'
 ];
 
 const settingsDefaultValues = [
     true,
     3000,
-    false,
     600
 ];
 
@@ -104,10 +102,6 @@ async function matchGame(targetTime){
     console.log(timeAlreadyPassed);
     targetUnix = Date.now() + targetTime - 350 - timeAlreadyPassed; // the card animations now take 300 ms
 
-    if (settings['accurateTime']) {
-        await delay( targetTime );
-    }
-
     // Just so we don't freeze the browser somehow
     iterations = 20;
     while (true) {
@@ -195,9 +189,7 @@ async function matchGame(targetTime){
         matchingTile.parentElement.parentElement.parentElement.click();
 
         // In order to get the target time
-        if (!settings['accurateTime']) {
-            await delay( (targetUnix - Date.now()) / ((actualGameboardLength-2)/2) );
-        }
+        await delay( (targetUnix - Date.now()) / ((actualGameboardLength-2)/2) );
     }
 }
 

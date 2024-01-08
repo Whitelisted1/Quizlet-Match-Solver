@@ -12,14 +12,12 @@ const ARRAY_TYPE = 3;
 const settingsKeys = [
     'extensionEnabled',
     'defaultTargetTime',
-    'accurateTime',
     'setCacheTime'
 ];
 
 const settingsDefaultValues = [
     true,
     3000,
-    false,
     600
 ];
 

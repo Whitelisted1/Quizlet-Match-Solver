@@ -115,11 +115,12 @@ async function matchGame(targetTime){
         let actualGameboardLength = 0; // since we skip cards that use images
         
         // Get the current tiles
-        let gameboardRows = document.getElementsByClassName('b10wn7cm bpgrkzt')[0].childNodes;
+        let gameboardRows = document.getElementsByClassName('b10wn7cm bpgrkzt')[0];
         if (gameboardRows == undefined) {
-            console.log("No child nodes ... ");
+            console.log("No child nodes");
             break;
         }
+        gameboardRows = gameboardRows.childNodes;
         
         // Loop through the tiles and allow us to use the information from them
         
